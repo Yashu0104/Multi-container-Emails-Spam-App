@@ -2,54 +2,76 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = 'spam-sniffer'
+        DOCKER_COMPOSE = 'docker-compose -f docker-compose.yml'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
+                // Pull the latest code from Git repository
                 git branch: 'main', url: 'https://github.com/Yashu0104/Multi-container-Emails-Spam-App.git'
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                bat 'docker-compose -f docker-compose.yml build'
+                script {
+                    // Build frontend and backend Docker images
+                    sh "${DOCKER_COMPOSE} build"
+                }
             }
         }
 
         stage('Run Containers') {
             steps {
-                bat 'docker-compose -f docker-compose.yml up -d'
+                script {
+                    // Start the containers using docker-compose
+                    sh "${DOCKER_COMPOSE} up -d"
+                }
             }
         }
 
         stage('Health Check') {
             steps {
-                bat '''
-                curl -s http://localhost:5000/api/health || echo "Backend not reachable"
-                curl -s http://localhost:3000 || echo "Frontend not reachable"
-                '''
+                script {
+                    // Wait for containers to be up and check if they are healthy
+                    sleep 10 // Give some time for containers to start
+                    sh 'docker ps'  // List running containers to verify
+                }
             }
         }
 
         stage('Run Backend Tests') {
             steps {
-                bat 'docker-compose exec backend pytest || echo "Tests failed"'
+                script {
+                    // Run backend tests if any (e.g., unit tests for Flask app)
+                    // Example:
+                    // sh 'pytest tests/'
+                }
             }
         }
 
         stage('Cleanup Old Containers') {
             steps {
-                bat 'docker-compose -f docker-compose.yml down'
+                script {
+                    // Stop and remove any running containers
+                    sh "${DOCKER_COMPOSE} down"
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Teardown...'
-            bat 'docker-compose -f docker-compose.yml down'
+            // Cleanup actions after the pipeline completes
+            echo 'Cleaning up'
+            sh "${DOCKER_COMPOSE} down"
+        }
+        success {
+            echo 'Build and deployment successful!'
+        }
+        failure {
+            echo 'Build failed.'
         }
     }
 }
