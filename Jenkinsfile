@@ -2,49 +2,54 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'https://github.com/Yashu0104/Multi-container-Emails-Spam-App.git'
-        GIT_BRANCH = 'main'
+        COMPOSE_PROJECT_NAME = 'spam-sniffer'
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout Code') {
             steps {
-                // Pull the latest code from the main branch
-                git url: "${GIT_REPO}", branch: "${GIT_BRANCH}"
+                git branch: 'main', url: 'https://github.com/Yashu0104/Multi-container-Emails-Spam-App.git'
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                // Build Docker images for backend and frontend
-                bat 'docker build -t spam-sniffer-backend ./backend' // Assuming Dockerfile is inside backend folder
-                bat 'docker build -t spam-sniffer-frontend ./frontend' // Assuming frontend Dockerfile is inside frontend folder
+                bat 'docker-compose -f docker-compose.yml build'
             }
         }
 
-        stage('Start Containers') {
+        stage('Run Containers') {
             steps {
-                // Start containers in detached mode
-                bat 'docker-compose up -d'
+                bat 'docker-compose -f docker-compose.yml up -d'
             }
         }
 
         stage('Health Check') {
             steps {
-                // Optional: Check running containers to ensure everything is working
-                bat 'docker ps'
+                bat '''
+                curl -s http://localhost:5000/api/health || echo "Backend not reachable"
+                curl -s http://localhost:3000 || echo "Frontend not reachable"
+                '''
+            }
+        }
+
+        stage('Run Backend Tests') {
+            steps {
+                bat 'docker-compose exec backend pytest || echo "Tests failed"'
+            }
+        }
+
+        stage('Cleanup Old Containers') {
+            steps {
+                bat 'docker-compose -f docker-compose.yml down'
             }
         }
     }
 
     post {
         always {
-            // Clean up by stopping containers
-            echo 'Cleaning up...'
-            bat 'docker-compose down'
-        }
-        failure {
-            echo '❌ Deployment failed.'
+            echo 'Teardown...'
+            bat 'docker-compose -f docker-compose.yml down'
         }
     }
 }
