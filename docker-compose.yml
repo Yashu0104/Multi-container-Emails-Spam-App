@@ -2,7 +2,7 @@
 services:
   frontend:
     build:
-      context: ./spam-sniffer
+      context: ./spam-sniffer/spam-sniffer
     ports:
       - "3000:3000"
     depends_on:

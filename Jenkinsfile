@@ -15,7 +15,10 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    bat "${DOCKER_COMPOSE} build"  // Using 'bat' for Windows
+                    bat """
+                    echo Building Docker images...
+                    ${DOCKER_COMPOSE} build || exit /b 1
+                    """
                 }
             }
         }
@@ -23,7 +26,10 @@ pipeline {
         stage('Run Containers') {
             steps {
                 script {
-                    bat "${DOCKER_COMPOSE} up -d"  // Using 'bat' for Windows
+                    bat """
+                    echo Starting Docker containers...
+                    ${DOCKER_COMPOSE} up -d || exit /b 1
+                    """
                 }
             }
         }
@@ -31,8 +37,9 @@ pipeline {
         stage('Health Check') {
             steps {
                 script {
+                    echo 'Waiting for containers to initialize...'
                     sleep 10
-                    bat 'docker ps'  // Using 'bat' for Windows
+                    bat 'docker ps'
                 }
             }
         }
@@ -40,8 +47,11 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 script {
-                    // Uncomment and configure the test command as per your setup
-                    bat 'pytest tests/'  // Example backend test command for Windows
+                    // Update path to your actual test directory
+                    bat """
+                    echo Running backend tests...
+                    pytest tests/ || exit /b 1
+                    """
                 }
             }
         }
@@ -49,7 +59,10 @@ pipeline {
         stage('Cleanup Old Containers') {
             steps {
                 script {
-                    bat "${DOCKER_COMPOSE} down"  // Using 'bat' for Windows
+                    bat """
+                    echo Cleaning up containers...
+                    ${DOCKER_COMPOSE} down
+                    """
                 }
             }
         }
@@ -58,19 +71,15 @@ pipeline {
     post {
         always {
             script {
-                echo 'Cleaning up'
-                bat "${DOCKER_COMPOSE} down"  // Using 'bat' for Windows
+                echo 'Post-build cleanup...'
+                bat "${DOCKER_COMPOSE} down"
             }
         }
         success {
-            script {
-                echo 'Build and deployment successful!'
-            }
+            echo '✅ Build and deployment successful!'
         }
         failure {
-            script {
-                echo 'Build failed.'
-            }
+            echo '❌ Build failed.'
         }
     }
 }
