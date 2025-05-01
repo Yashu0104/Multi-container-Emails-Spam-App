@@ -41,7 +41,7 @@ pipeline {
             steps {
                 script {
                     // Uncomment and configure the test command as per your setup
-                    // bat 'pytest tests/'  // Example backend test command for Windows
+                    bat 'pytest tests/'  // Example backend test command for Windows
                 }
             }
         }
