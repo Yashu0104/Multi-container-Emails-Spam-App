@@ -3,6 +3,5 @@ data/db/
 __pycache__/
 *.pyc
 *.pkl
-spam-sniffer-backend/.env
+*.env
 .vscode/
-bfg-1.15.0.jar

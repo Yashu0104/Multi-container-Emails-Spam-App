@@ -8,7 +8,6 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                // Pull the latest code from Git repository
                 git branch: 'main', url: 'https://github.com/Yashu0104/Multi-container-Emails-Spam-App.git'
             }
         }
@@ -16,7 +15,6 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    // Build frontend and backend Docker images
                     sh "${DOCKER_COMPOSE} build"
                 }
             }
@@ -25,7 +23,6 @@ pipeline {
         stage('Run Containers') {
             steps {
                 script {
-                    // Start the containers using docker-compose
                     sh "${DOCKER_COMPOSE} up -d"
                 }
             }
@@ -34,9 +31,8 @@ pipeline {
         stage('Health Check') {
             steps {
                 script {
-                    // Wait for containers to be up and check if they are healthy
-                    sleep 10 // Give some time for containers to start
-                    sh 'docker ps'  // List running containers to verify
+                    sleep 10
+                    sh 'docker ps'
                 }
             }
         }
@@ -44,8 +40,7 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 script {
-                    // Run backend tests if any (e.g., unit tests for Flask app)
-                    // Example:
+                    // Example backend test command
                     // sh 'pytest tests/'
                 }
             }
@@ -54,7 +49,6 @@ pipeline {
         stage('Cleanup Old Containers') {
             steps {
                 script {
-                    // Stop and remove any running containers
                     sh "${DOCKER_COMPOSE} down"
                 }
             }
@@ -63,15 +57,20 @@ pipeline {
 
     post {
         always {
-            // Cleanup actions after the pipeline completes
-            echo 'Cleaning up'
-            sh "${DOCKER_COMPOSE} down"
+            script {
+                echo 'Cleaning up'
+                sh "${DOCKER_COMPOSE} down"
+            }
         }
         success {
-            echo 'Build and deployment successful!'
+            script {
+                echo 'Build and deployment successful!'
+            }
         }
         failure {
-            echo 'Build failed.'
+            script {
+                echo 'Build failed.'
+            }
         }
     }
 }
