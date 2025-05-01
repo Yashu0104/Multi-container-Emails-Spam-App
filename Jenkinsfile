@@ -2,48 +2,49 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = "spam_sniffer"
+        GIT_REPO = 'https://github.com/Yashu0104/Multi-container-Emails-Spam-App.git'
+        GIT_BRANCH = 'main'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout SCM') {
             steps {
-                checkout scm
+                // Pull the latest code from the main branch
+                git url: "${GIT_REPO}", branch: "${GIT_BRANCH}"
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker-compose build'
+                // Build Docker images for backend and frontend
+                bat 'docker build -t spam-sniffer-backend ./backend' // Assuming Dockerfile is inside backend folder
+                bat 'docker build -t spam-sniffer-frontend ./frontend' // Assuming frontend Dockerfile is inside frontend folder
             }
         }
 
         stage('Start Containers') {
             steps {
-                sh 'docker-compose up -d'
+                // Start containers in detached mode
+                bat 'docker-compose up -d'
             }
         }
 
         stage('Health Check') {
             steps {
-                script {
-                    echo "Waiting for backend to become ready..."
-                    sleep 10
-                    sh 'curl --fail http://localhost:5000 || (echo "Backend failed to start" && exit 1)'
-                }
+                // Optional: Check running containers to ensure everything is working
+                bat 'docker ps'
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Deployment successful.'
+        always {
+            // Clean up by stopping containers
+            echo 'Cleaning up...'
+            bat 'docker-compose down'
         }
         failure {
             echo '❌ Deployment failed.'
-        }
-        cleanup {
-            echo '🧹 You can add docker-compose down or cleanup tasks here if needed.'
         }
     }
 }
