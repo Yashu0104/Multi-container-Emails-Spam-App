@@ -20,7 +20,7 @@ nltk.download('punkt_tab')
 # Initialize Flask App
 app = Flask(__name__)
 # Add this line to enable CORS for all routes
-CORS(app, origins=["http://localhost:3000"])
+CORS(app, origins=["http://localhost:5173"])
 
 # MongoDB Setup
 client = MongoClient(os.getenv("MONGO_URI"))
