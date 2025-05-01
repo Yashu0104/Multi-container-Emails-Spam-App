@@ -15,7 +15,7 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    sh "${DOCKER_COMPOSE} build"
+                    bat "${DOCKER_COMPOSE} build"  // Using 'bat' for Windows
                 }
             }
         }
@@ -23,7 +23,7 @@ pipeline {
         stage('Run Containers') {
             steps {
                 script {
-                    sh "${DOCKER_COMPOSE} up -d"
+                    bat "${DOCKER_COMPOSE} up -d"  // Using 'bat' for Windows
                 }
             }
         }
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     sleep 10
-                    sh 'docker ps'
+                    bat 'docker ps'  // Using 'bat' for Windows
                 }
             }
         }
@@ -40,8 +40,8 @@ pipeline {
         stage('Run Backend Tests') {
             steps {
                 script {
-                    // Example backend test command
-                    // sh 'pytest tests/'
+                    // Uncomment and configure the test command as per your setup
+                    // bat 'pytest tests/'  // Example backend test command for Windows
                 }
             }
         }
@@ -49,7 +49,7 @@ pipeline {
         stage('Cleanup Old Containers') {
             steps {
                 script {
-                    sh "${DOCKER_COMPOSE} down"
+                    bat "${DOCKER_COMPOSE} down"  // Using 'bat' for Windows
                 }
             }
         }
@@ -59,7 +59,7 @@ pipeline {
         always {
             script {
                 echo 'Cleaning up'
-                sh "${DOCKER_COMPOSE} down"
+                bat "${DOCKER_COMPOSE} down"  // Using 'bat' for Windows
             }
         }
         success {
